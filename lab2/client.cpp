@@ -12,25 +12,25 @@ using namespace std;
 #define PORT 8080
 
 int main() {
-    struct sockaddr_in serverAddress;
+    struct sockaddr_in server_Address;
     int sock = 0;
-    string str;
+    string message;
 
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("create error \n");
+        printf("ERROR WITH SOCKET\n");
         exit(EXIT_FAILURE);
     }
 
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(PORT);
+    server_Address.sin_family = AF_INET;
+    server_Address.sin_port = htons(PORT);
 
     // Converting address to the binary form
-    if (inet_pton(AF_INET, "127.0.0.1", &serverAddress.sin_addr) <= 0) {
-        printf("Error: Address not supported \n");
+    if (inet_pton(AF_INET, "127.0.0.1", &server_Address.sin_addr) <= 0) {
+        printf("ERROR WITH ADDRESS \n");
         exit(EXIT_FAILURE);
     }
 
-    if (connect(sock, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
+    if (connect(sock, (struct sockaddr*)&server_Address, sizeof(server_Address)) < 0) {
         printf("Connection failed \n");
         exit(EXIT_FAILURE);
     }
@@ -38,12 +38,12 @@ int main() {
     while (true)
     {
         cout << "Enter message: ";
-        cin >> str;
+        cin >> message;
 
-        send(sock, str.c_str(), sizeof(str), 0);
-        printf("Message sent \n");
+        send(sock, message.c_str(), sizeof(str), 0);
+        printf("Message was send\n");
 
-        str = "";
+        message = "";
     }
     close(sock);
 
