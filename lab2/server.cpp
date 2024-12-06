@@ -10,12 +10,12 @@ using namespace std;
 
 volatile sig_atomic_t wasSigHup = 0;
 
-/*ôóíêöèÿ îáðàáîò÷èêà ñèãíàëà*/
+// ф-я обработчика сигнала
 void sigHupHandler(int r);
 
 int main()
 {
-    /*óñòàíîâêà îáðàáîò÷èêà ñèãíàëà*/
+    // регистрация обработчика сигнала
     struct sigaction sa;
     sa.sa_handler = sigHupHandler;
     sa.sa_flags = SA_RESTART;
@@ -26,10 +26,10 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    /*ñîçäàíèå ñîêåòà äëÿ ïðèžìà */
+    // сокет для приема 
     int message_sock = -1, client_sock;
 
-    /*ñîçäàíèå ñîêåòà äëÿ ñåðâåðà*/
+    // сервер для сокета
     int server_sock, port = 8080;
     struct sockaddr_in addr;
     socklen_t size_addr = sizeof(addr);
@@ -58,25 +58,27 @@ int main()
     }
     printf("Server is listening on port %d\n", port);
 
-
-    fd_set read_fds;		                //ôàéëîâûé äåñêðèïòîð äëÿ ñëåæêè çà ïîÿâëåíèåì äàííûõ				
+    // РАБОТА ОСНОВНОГО ЦИКЛА
+    fd_set read_fds;		                // дескриптор для данных				
     FD_ZERO(&read_fds);
-    FD_SET(server_sock, &read_fds);     	//äîáàâëÿåì server_socket â ãðóïïó
+    FD_SET(server_sock, &read_fds);     	//сервер_сокет адд в группу
 
+
+    //БЛОКИРОВКА СИГНАЛА
     sigset_t blocked_mask, mask;
     sigemptyset(&blocked_mask);
     sigemptyset(&mask);
     sigaddset(&blocked_mask, SIGHUP);
     sigprocmask(SIG_BLOCK, &blocked_mask, &mask);
 
-    struct timespec tv;	                    // îæèäàíèå äàííûõ ïðè âûçîâå pselect
+    struct timespec tv;	                    // ожидание данных при вызове pselect
     tv.tv_sec = 10;
     tv.tv_nsec = 0;
 
     while (true)
     {
         FD_ZERO(&read_fds);
-        FD_SET(server_sock, &read_fds);     	//äîáàâëÿåì server_socket â ãðóïïó
+        FD_SET(server_sock, &read_fds);     	//адд server_socket в группу
 
         if (wasSigHup == 1)
         {
@@ -108,13 +110,13 @@ int main()
                 printf("Connection accepted\n");
 
 
-                // 1. Îñòàâëÿåì îäíî ñîåäèíåíèå ïðèíÿòûì, îñòàëüíûå çàêðûâàåì
+                // 1. Оставляем одно соединение принятым, другие закрываем
                 if (message_sock == -1)
                     message_sock = client_sock;
                 else
                     close(client_sock);
 
-                // 2. Ïðè ïîÿâëåíèè ëþáûõ äàííûõ âûâîäèì ñîîáùåíèå
+                // 2. При появлении любых данных вывод мессаге
                 char buf[1024];
                 size_t bytes_rec = recv(message_sock, buf, sizeof(buf), 0);
 
