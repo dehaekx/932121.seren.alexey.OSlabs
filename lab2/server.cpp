@@ -8,23 +8,10 @@
 #include <string>
 using namespace std;
 
-volatile sig_atomic_t get_sig = 0;
+volatile sig_atomic_t wasSigHup = 0;
 
 /*функция обработчика сигнала*/
-void handler(int sig)
-{
-    if (sig == SIGHUP)
-    {
-        printf("Received SIGHUP signal\n");
-        get_sig = 1;
-    }
-    else
-    {
-        printf("Error: handler failed");
-        exit(EXIT_FAILURE);
-    }
-    exit(EXIT_FAILURE);
-}
+void sigHupHandler(int r);
 
 int main()
 {
@@ -152,6 +139,21 @@ int main()
     return 0;
 }
 
+
+void sigHupHandler(int r);
+{
+    if (r == SIGHUP)
+    {
+        printf("Received SIGHUP signal\n");
+        wasSigHup = 1;
+    }
+    else
+    {
+        printf("Error: handler failed");
+        exit(EXIT_FAILURE);
+    }
+    exit(EXIT_FAILURE);
+}
 
 
 
