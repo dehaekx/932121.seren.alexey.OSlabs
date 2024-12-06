@@ -17,7 +17,7 @@ int main()
 {
     /*установка обработчика сигнала*/
     struct sigaction sa;
-    sa.sa_handler = handler;
+    sa.sa_handler = sigHupHandler;
     sa.sa_flags = SA_RESTART;
 
     if (sigaction(SIGHUP, &sa, NULL) == -1)
