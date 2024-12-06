@@ -10,12 +10,12 @@ using namespace std;
 
 volatile sig_atomic_t wasSigHup = 0;
 
-/*функция обработчика сигнала*/
+/*ГґГіГ­ГЄГ¶ГЁГї Г®ГЎГ°Г ГЎГ®ГІГ·ГЁГЄГ  Г±ГЁГЈГ­Г Г«Г */
 void sigHupHandler(int r);
 
 int main()
 {
-    /*установка обработчика сигнала*/
+    /*ГіГ±ГІГ Г­Г®ГўГЄГ  Г®ГЎГ°Г ГЎГ®ГІГ·ГЁГЄГ  Г±ГЁГЈГ­Г Г«Г */
     struct sigaction sa;
     sa.sa_handler = sigHupHandler;
     sa.sa_flags = SA_RESTART;
@@ -26,10 +26,10 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    /*создание сокета для приёма */
+    /*Г±Г®Г§Г¤Г Г­ГЁГҐ Г±Г®ГЄГҐГІГ  Г¤Г«Гї ГЇГ°ГЁЕѕГ¬Г  */
     int message_sock = -1, client_sock;
 
-    /*создание сокета для сервера*/
+    /*Г±Г®Г§Г¤Г Г­ГЁГҐ Г±Г®ГЄГҐГІГ  Г¤Г«Гї Г±ГҐГ°ГўГҐГ°Г */
     int server_sock, port = 8080;
     struct sockaddr_in addr;
     socklen_t size_addr = sizeof(addr);
@@ -59,9 +59,9 @@ int main()
     printf("Server is listening on port %d\n", port);
 
 
-    fd_set read_fds;		                //файловый дескриптор для слежки за появлением данных				
+    fd_set read_fds;		                //ГґГ Г©Г«Г®ГўГ»Г© Г¤ГҐГ±ГЄГ°ГЁГЇГІГ®Г° Г¤Г«Гї Г±Г«ГҐГ¦ГЄГЁ Г§Г  ГЇГ®ГїГўГ«ГҐГ­ГЁГҐГ¬ Г¤Г Г­Г­Г»Гµ				
     FD_ZERO(&read_fds);
-    FD_SET(server_sock, &read_fds);     	//добавляем server_socket в группу
+    FD_SET(server_sock, &read_fds);     	//Г¤Г®ГЎГ ГўГ«ГїГҐГ¬ server_socket Гў ГЈГ°ГіГЇГЇГі
 
     sigset_t blocked_mask, mask;
     sigemptyset(&blocked_mask);
@@ -69,23 +69,23 @@ int main()
     sigaddset(&blocked_mask, SIGHUP);
     sigprocmask(SIG_BLOCK, &blocked_mask, &mask);
 
-    struct timespec tv;	                    // ожидание данных при вызове pselect
+    struct timespec tv;	                    // Г®Г¦ГЁГ¤Г Г­ГЁГҐ Г¤Г Г­Г­Г»Гµ ГЇГ°ГЁ ГўГ»Г§Г®ГўГҐ pselect
     tv.tv_sec = 10;
     tv.tv_nsec = 0;
 
     while (true)
     {
         FD_ZERO(&read_fds);
-        FD_SET(server_sock, &read_fds);     	//добавляем server_socket в группу
+        FD_SET(server_sock, &read_fds);     	//Г¤Г®ГЎГ ГўГ«ГїГҐГ¬ server_socket Гў ГЈГ°ГіГЇГЇГі
 
-        if (get_sig == 1)
+        if (wasSigHup == 1)
         {
             if (message_sock != -1)
             {
                 close(message_sock);
                 message_sock = -1;
 
-                get_sig = 0;
+                wasSigHup = 0;
             }
         }
 
@@ -108,13 +108,13 @@ int main()
                 printf("Connection accepted\n");
 
 
-                // 1. Оставляем одно соединение принятым, остальные закрываем
+                // 1. ГЋГ±ГІГ ГўГ«ГїГҐГ¬ Г®Г¤Г­Г® Г±Г®ГҐГ¤ГЁГ­ГҐГ­ГЁГҐ ГЇГ°ГЁГ­ГїГІГ»Г¬, Г®Г±ГІГ Г«ГјГ­Г»ГҐ Г§Г ГЄГ°Г»ГўГ ГҐГ¬
                 if (message_sock == -1)
                     message_sock = client_sock;
                 else
                     close(client_sock);
 
-                // 2. При появлении любых данных выводим сообщение
+                // 2. ГЏГ°ГЁ ГЇГ®ГїГўГ«ГҐГ­ГЁГЁ Г«ГѕГЎГ»Гµ Г¤Г Г­Г­Г»Гµ ГўГ»ГўГ®Г¤ГЁГ¬ Г±Г®Г®ГЎГ№ГҐГ­ГЁГҐ
                 char buf[1024];
                 size_t bytes_rec = recv(message_sock, buf, sizeof(buf), 0);
 
@@ -140,7 +140,7 @@ int main()
 }
 
 
-void sigHupHandler(int r);
+void sigHupHandler(int r)
 {
     if (r == SIGHUP)
     {
