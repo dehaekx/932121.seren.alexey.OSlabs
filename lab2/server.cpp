@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <iostream>
 using namespace std;
 
 volatile sig_atomic_t wasSigHup = 0;
@@ -22,7 +23,7 @@ int main()
 
     if (sigaction(SIGHUP, &sa, NULL) == -1)
     {
-        printf("Error: SIGHUP failed");
+        cout << "SIGHUP failed" << endl;
         exit(EXIT_FAILURE);
     }
 
@@ -35,11 +36,6 @@ int main()
     socklen_t size_addr = sizeof(addr);
 
     server_sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_sock < 0)
-    {
-        perror("Error:  socket failed\n");
-        exit(EXIT_FAILURE);
-    }
 
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = INADDR_ANY;
@@ -47,16 +43,16 @@ int main()
 
     if (bind(server_sock, (struct sockaddr*)&addr, sizeof(addr)) < 0)
     {
-        perror("Error: bind failed\n");
+        cout << "bind failed" << endl;
         exit(EXIT_FAILURE);
     }
 
     if (listen(server_sock, 1) < 0)
     {
-        perror("Error: listen failed\n");
+        cout << "Listen failed" << endl;
         exit(EXIT_FAILURE);
     }
-    printf("Server is listening on port %d\n", port);
+    cout << "Server is listening on port " << port << endl;
 
     // РАБОТА ОСНОВНОГО ЦИКЛА
     fd_set read_fds;		                // дескриптор для данных				
@@ -86,7 +82,6 @@ int main()
             {
                 close(message_sock);
                 message_sock = -1;
-
                 wasSigHup = 0;
             }
         }
@@ -95,7 +90,7 @@ int main()
 
         if (result == -1)
         {
-            perror("Error in pselect.\n");
+            cout << "PROBLEM with pselect" << endl;
         }
         else if (result)
         {
@@ -104,10 +99,10 @@ int main()
                 client_sock = accept(server_sock, (struct sockaddr*)&addr, &size_addr);
                 if (client_sock < 0)
                 {
-                    perror("Error: accept failed\n");
+                    cout << "accept Failed" << endl;
                     continue;
                 }
-                printf("Connection accepted\n");
+                cout << "Connection accepted" << endl;
 
 
                 // 1. Оставляем одно соединение принятым, другие закрываем
@@ -117,25 +112,29 @@ int main()
                     close(client_sock);
 
                 // 2. При появлении любых данных вывод мессаге
-                char buf[1024];
-                size_t bytes_rec = recv(message_sock, buf, sizeof(buf), 0);
+                char buff[1024];
+                size_t bytes = recv(message_sock, buff, sizeof(buff), 0);
 
-                if (bytes_rec > 0)
+                if (bytes > 0)
                 {
-                    buf[bytes_rec] = '\0';
-                    printf("Received %zu bytes.\n", bytes_rec);
+                    buff[bytes] = '\0';
+                    cout << "get bytes: " << bytes << endl;
                 }
-                else if (bytes_rec == 0)
+                else if (bytes == 0)
                 {
-                    printf("Received 0 bytes.\n");
+                    cout << "get 0 bytes." << endl;
                     raise(SIGHUP);
                 }
                 else
-                    perror("Error: receiving data\n");
+                {
+                    cout << "PROBLEM! with get data" << endl;
+                }
             }
         }
         else
-            printf("No data within ten second.\n");
+        {
+            cout << "No data" << endl;
+        }
     }
 
     return 0;
@@ -144,16 +143,8 @@ int main()
 
 void sigHupHandler(int r)
 {
-    if (r == SIGHUP)
-    {
-        printf("Received SIGHUP signal\n");
-        wasSigHup = 1;
-    }
-    else
-    {
-        printf("Error: handler failed");
-        exit(EXIT_FAILURE);
-    }
+    cout << "get SIGHUP signal" << endl;
+    wasSigHup = 1;
     exit(EXIT_FAILURE);
 }
 
